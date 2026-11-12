@@ -4,3 +4,7 @@ firebase-debug.log
 firestore-debug.log
 ui-debug.log
 *.log
+
+# Firebase Agent Skills (local development)
+.agents/
+skills-lock.json
