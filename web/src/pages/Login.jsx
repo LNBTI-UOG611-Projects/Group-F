@@ -1,5 +1,10 @@
 
 import { useState } from "react";
+import {
+  signInWithEmailAndPassword,
+  signOut,
+} from "firebase/auth";
+import { auth } from "../config/firebase";
 import "./Login.css";
 
 function Login() {
@@ -7,18 +12,75 @@ function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (event) => {
+  const handleLogin = async (event) => {
     event.preventDefault();
     setError("");
+    setSuccess("");
 
     if (!email.trim() || !password) {
       setError("Please enter your email and password.");
       return;
     }
 
-    // Authentication will be connected to the backend later.
-    setError("Login authentication is not connected yet.");
+    setLoading(true);
+
+    try {
+      // 1. Sign in using Firebase Authentication
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        email.trim(),
+        password
+      );
+
+      // 2. Get Firebase ID token
+      const token = await credential.user.getIdToken();
+
+      // 3. Ask Express to verify the token
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/me`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Backend authentication failed.");
+      }
+
+      const data = await response.json();
+
+      // 4. Check the verified user role
+      if (data.user.role === "sub_admin") {
+        setSuccess("Login successful! Welcome, Sub Admin.");
+      } else {
+        setSuccess(`Login successful! Role: ${data.user.role}`);
+      }
+
+      // Dashboard redirection will be added next.
+    } catch (err) {
+      // Clear any Firebase session after a failed login
+      // or failed backend authorization.
+      await signOut(auth).catch(() => {});
+
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
+        setError("Invalid email or password.");
+      } else {
+        setError(
+          err.message || "Login failed. Please try again."
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,6 +120,7 @@ function Login() {
               autoComplete="current-password"
               required
             />
+
             <button
               type="button"
               className="toggle-password"
@@ -70,10 +133,24 @@ function Login() {
             </button>
           </div>
 
-          {error && <p className="login-error" role="alert">{error}</p>}
+          {error && (
+            <p className="login-error" role="alert">
+              {error}
+            </p>
+          )}
 
-          <button type="submit" className="login-button">
-            Sign In
+          {success && (
+            <p role="status" style={{ color: "#1b5e20" }}>
+              {success}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            className="login-button"
+            disabled={loading}
+          >
+            {loading ? "Signing In..." : "Sign In"}
           </button>
         </form>
 
