@@ -1,10 +1,10 @@
-
-node_modules/
-.env
-.env.*
-!.env.example
-dist/
-build/
-.expo/
-coverage/
+**/node_modules/
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
 *.log
+
+# Firebase Agent Skills (local development)
+.agents/
+skills-lock.json
