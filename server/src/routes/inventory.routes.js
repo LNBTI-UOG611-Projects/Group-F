@@ -68,6 +68,94 @@ function createInventoryRouter({ db, authenticate, requireMainAdmin }) {
     }
   });
 
+  // PATCH /api/inventory/:itemId
+  router.patch("/:itemId", async (req, res) => {
+    try {
+      const updatedItem = await inventory.updateItem(
+        req.params.itemId,
+        req.body
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Inventory item updated",
+        data: updatedItem
+      });
+
+    } catch (error) {
+      const messages = [
+        "Invalid inventory item ID",
+        "Invalid update data",
+        "Invalid update fields",
+        "Invalid item name",
+        "Invalid reorder level",
+        "Invalid pest categories",
+        "Unknown pest category",
+        "Inventory item not found",
+        "Cannot edit archived item"
+      ];
+
+      if (messages.includes(error.message)) {
+        const status =
+          error.message === "Inventory item not found"
+            ? 404
+            : error.message === "Cannot edit archived item"
+              ? 409
+              : 400;
+
+        return res.status(status).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      console.error("Inventory update error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to update inventory item"
+      });
+    }
+  });
+
+  // PATCH /api/inventory/:itemId/archive
+  router.patch("/:itemId/archive", async (req, res) => {
+    try {
+      const result = await inventory.archiveItem(
+        req.params.itemId
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: result
+      });
+
+    } catch (error) {
+      const statusMap = {
+        "Invalid inventory item ID": 400,
+        "Inventory item not found": 404,
+        "Item already archived": 409,
+        "Cannot archive item with reserved stock": 409
+      };
+
+      if (Object.prototype.hasOwnProperty.call(
+        statusMap, error.message
+      )) {
+        return res.status(statusMap[error.message]).json({
+          success: false,
+          message: error.message
+        });
+      }
+
+      console.error("Inventory archive error:", error);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to archive inventory item"
+      });
+    }
+  });
+
   return router;
 }
 

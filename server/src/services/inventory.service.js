@@ -111,7 +111,169 @@ function createInventoryService(db) {
     };
   }
 
-  return { getAllItems, addItem };
+  // UPDATE: Edit an existing inventory item's details
+  async function updateItem(itemId, input) {
+    if (!itemId || typeof itemId !== "string") {
+      throw new Error("Invalid inventory item ID");
+    }
+
+    if (!input || typeof input !== "object" ||
+        Array.isArray(input)) {
+      throw new Error("Invalid update data");
+    }
+
+    // Only allow these fields to be edited here.
+    const allowedFields = [
+      "name",
+      "reorderLevel",
+      "pestCategoryIds"
+    ];
+
+    const keys = Object.keys(input);
+
+    if (
+      keys.length === 0 ||
+      keys.some((key) => !allowedFields.includes(key))
+    ) {
+      throw new Error("Invalid update fields");
+    }
+
+    const changes = {};
+
+    if ("name" in input) {
+      if (
+        typeof input.name !== "string" ||
+        !input.name.trim() ||
+        input.name.trim().length > 150
+      ) {
+        throw new Error("Invalid item name");
+      }
+
+      changes.name = input.name.trim();
+    }
+
+    if ("reorderLevel" in input) {
+      if (
+        typeof input.reorderLevel !== "number" ||
+        !Number.isFinite(input.reorderLevel) ||
+        input.reorderLevel < 0
+      ) {
+        throw new Error("Invalid reorder level");
+      }
+
+      changes.reorderLevel = input.reorderLevel;
+    }
+
+    if ("pestCategoryIds" in input) {
+      if (
+        !Array.isArray(input.pestCategoryIds) ||
+        !input.pestCategoryIds.every(
+          (id) =>
+            typeof id === "string" &&
+            id.length > 0
+        )
+      ) {
+        throw new Error("Invalid pest categories");
+      }
+
+      const categories = [
+        ...new Set(input.pestCategoryIds)
+      ];
+
+      for (const categoryId of categories) {
+        const categoryDoc = await db
+          .collection("pestCategories")
+          .doc(categoryId)
+          .get();
+
+        if (
+          !categoryDoc.exists ||
+          categoryDoc.data().active !== true
+        ) {
+          throw new Error("Unknown pest category");
+        }
+      }
+
+      changes.pestCategoryIds = categories;
+    }
+
+    const itemRef = db.collection(COLLECTION).doc(itemId);
+
+    // A transaction prevents editing an item that is
+    // archived while this update is taking place.
+    await db.runTransaction(async (transaction) => {
+      const existing = await transaction.get(itemRef);
+
+      if (!existing.exists) {
+        throw new Error("Inventory item not found");
+      }
+
+      if (existing.data().isActive !== true) {
+        throw new Error("Cannot edit archived item");
+      }
+
+      transaction.update(itemRef, {
+        ...changes,
+        updatedAt: FieldValue.serverTimestamp(),
+      });
+    });
+
+    const updated = await itemRef.get();
+
+    return {
+      id: updated.id,
+      ...updated.data()
+    };
+  }
+
+  // ARCHIVE: Mark an item as inactive
+  async function archiveItem(itemId) {
+    if (!itemId || typeof itemId !== "string") {
+      throw new Error("Invalid inventory item ID");
+    }
+
+    const itemRef = db.collection(COLLECTION).doc(itemId);
+
+    await db.runTransaction(async (transaction) => {
+      const existing = await transaction.get(itemRef);
+
+      if (!existing.exists) {
+        throw new Error("Inventory item not found");
+      }
+
+      const item = existing.data();
+
+      if (item.isActive !== true) {
+        throw new Error("Item already archived");
+      }
+
+      if (
+        typeof item.quantityReserved !== "number" ||
+        item.quantityReserved > 0
+      ) {
+        throw new Error(
+          "Cannot archive item with reserved stock"
+        );
+      }
+
+      transaction.update(itemRef, {
+        isActive: false,
+        updatedAt: FieldValue.serverTimestamp()
+      });
+    });
+
+    return {
+      id: itemId,
+      message: "Inventory item archived successfully"
+    };
+  }
+
+  return {
+    getAllItems,
+    addItem,
+    updateItem,
+    archiveItem
+  };
 }
 
 module.exports = { createInventoryService };
