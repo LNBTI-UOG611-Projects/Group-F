@@ -8,10 +8,12 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+
         <Route
           path="/customer/dashboard"
           element={<CustomerDashboard />}
         />
+
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
