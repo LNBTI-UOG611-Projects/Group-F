@@ -1,10 +1,17 @@
 # PCI Colombo – Main Admin and Inventory Database Requirements
 
+> **SUPERSEDED – do not build from this document.**
+> This file describes a **MySQL** design. The team now uses **Firebase Cloud Firestore**
+> (see `docs/DECISIONS.md`, section E).
+> The correct collection and field names are in `docs/DECISIONS.md` (B1–B7) and
+> `database/schema/collections.md`.
+> This file is kept only as background on what data the Main Admin module needs.
+
 **Project:** PCI Colombo – Smart Pest Control Service Management System  
 **Module:** ICT2410 Software Development Group Project – Team F  
 **Assigned member:** K. K. C. Yasasmi Nimnadi  
 **Development area:** Main Admin, inventory administration, employee leave approvals and selected shared inventory allocation logic  
-**Document status:** Proposed database requirements — subject to team ERD review and PCI Colombo confirmation
+**Document status:** Superseded on 23 Nov 2026 – MySQL design kept as background only (replaced by Firestore)
 
 ## 1. Purpose and Scope
 
