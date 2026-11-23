@@ -8,13 +8,14 @@ They refuse to run unless the emulator variables are set, so they can never touc
 1. Terminal 1, in the `Group-F` folder: `firebase emulators:start`
 2. Terminal 2:
 
-    cd database\seeds
-    npm install
-    $env:FIRESTORE_EMULATOR_HOST="127.0.0.1:8080"
-    $env:FIREBASE_AUTH_EMULATOR_HOST="127.0.0.1:9099"
-    $env:DEMO_TEST_PASSWORD="ask-the-leader"   # never commit this
-    npm run seed
-
+```powershell
+cd database\seeds
+npm install
+$env:FIRESTORE_EMULATOR_HOST="127.0.0.1:8080"
+$env:FIREBASE_AUTH_EMULATOR_HOST="127.0.0.1:9099"
+$env:DEMO_TEST_PASSWORD="ask-the-leader"   # never commit this
+npm run seed
+```
 3. Check the data at http://127.0.0.1:4000/firestore
 
 The emulator forgets all data when it stops, so run `npm run seed` again each time.
