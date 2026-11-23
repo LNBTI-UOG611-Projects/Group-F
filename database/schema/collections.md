@@ -5,7 +5,7 @@
 **Storage:** Cloud Firestore (Firebase project `PCI-Colombo-Team-F`)  
 **Clients:** React web (Main Admin, Sub Admin, Customer); React Native/Expo (Employee)  
 **Backend:** One Node.js/Express REST API using Firebase Admin SDK  
-**Status:** **Proposed design — review and approve before writing seed scripts or production code.**
+**Status:** Draft v1 – aligned with `docs/DECISIONS.md` on 23 Nov 2026. If this file and DECISIONS.md disagree, DECISIONS.md wins.
 
 ## 1. How to read this document
 
@@ -39,7 +39,7 @@
 **Rules:** Each user has exactly one role (DECISIONS B1).
 
 #### `roles/{roleId}`
-`name: string`, `description: string`, `active: boolean`. Recommended fixed IDs: `main_admin`, `sub_admin`, `customer`, `employee`.
+`name: string`, `description: string`, `status: string` (`active`, `archived`). Recommended fixed IDs: `main_admin`, `sub_admin`, `customer`, `employee`.
 
 #### `permissions/{permissionId}`
 `name: string`, `description: string`, `module: string`. Example `inventory.manage`. **Do not let a client modify permissions.**
@@ -50,7 +50,7 @@
 ### 2.2 Main Admin — Yasasmi
 
 #### `employees/{employeeId}`
-`userUid: ref:users`, `employeeCode: string`, `fullName: string`, `contactNumber: string?`, `specializations: array<string>`, `hireDate: timestamp?`, `employmentStatus: string` (`active`, `inactive`), `createdAt`, `updatedAt`. `userUid` must identify an appropriate authenticated employee account.
+`userUid: ref:users`, `employeeCode: string`, `fullName: string`, `contactNumber: string?`, `specializations: array<string>`, `hireDate: timestamp?`, `status: string`` (`active`, `archived`), `createdAt`, `updatedAt`. `userUid` must identify an appropriate authenticated employee account.
 
 #### `leaveRequests/{leaveId}`
 `employeeId: ref:employees`, `leaveType: string` (`half_day`, `one_day`, `multiple_day`), `startDate: timestamp`, `endDate: timestamp`, `halfDaySession: string?` (`morning`, `afternoon`), `reason: string`, `status: string` (`pending`, `approved`, `rejected`, `cancelled`), `reviewedByUid: ref:users?`, `reviewedAt: timestamp?`, `reviewNote: string?`, `createdAt`, `updatedAt`.
@@ -58,13 +58,13 @@
 **Rules:** End date must not precede start date; half-day requests require a session; only authorized Main Admin approves/rejects; approved leave is checked during assignment. Resolve reassignment when leave overlaps visits.
 
 #### `serviceCategories/{categoryId}`
-`name: string`, `description: string?`, `active: boolean`, `createdAt`, `updatedAt`. **Service categories** (e.g. inspection/treatment) are distinct from **pest categories** below.
+`name: string`, `description: string?`, `status: string` (`active`, `archived`), `createdAt`, `updatedAt`. **Service categories** (e.g. inspection/treatment) are distinct from **pest categories** below.
 
 #### `pestCategories/{pestCategoryId}`
-`name: string`, `description: string?`, `active: boolean`. Initial proposed names: rats, cockroaches, subterranean termites, mosquitoes, bed bugs. IDs should be stable slugs.
+`name: string`, `description: string?`, `status: string` (`active`, `archived`). Initial proposed names: rats, cockroaches, subterranean termites, mosquitoes, bed bugs. IDs should be stable slugs.
 
 #### `inventoryItems/{itemId}`
-`name: string`, `itemType: string` (`chemical`, `equipment`, `other_consumable`), `sku: string`, `unit: string`, `quantityOnHand: number`, `quantityReserved: number`, `reorderLevel: number`, `pestCategoryIds: array<string>` (refs to `pestCategories`), `batchNumber: string?`, `expiresAt: timestamp?`, `approvalStatus: string?` (`pending_review`, `verified`, `rejected`, `expired`), `isActive: boolean`, `createdAt`, `updatedAt`.
+`name: string`, `itemType: string` (`chemical`, `equipment`, `other_consumable`), `sku: string`, `unit: string`, `quantityOnHand: number`, `quantityReserved: number`, `reorderLevel: number`, `pestCategoryIds: array<string>` (refs to `pestCategories`), `batchNumber: string?`, `expiresAt: timestamp?`, `approvalStatus: string?` (`pending_review`, `verified`, `rejected`, `expired`), `status: string` (`active`, `archived`), `createdAt`, `updatedAt`.
 
 **Rules:** Available quantity = on-hand minus reserved; never negative. Chemicals must pass verified approval, expiry and safety checks before allocation. For multiple chemical batches/expiries, migrate to separate `inventoryBatches` documents before implementing batch-level allocations. Equipment should ultimately be tracked by unit or checked-out quantity, not 'consumed' as chemicals are.
 
@@ -79,7 +79,7 @@
 ### 2.3 Customer — Dulni
 
 #### `customers/{customerId}`
-`userUid: ref:users`, `customerType: string` (`individual`, `organization`), `displayName: string`, `organizationName: string?`, `contactPerson: string?`, `phone: string?`, `status: string` (`active`, `inactive`), `createdAt`, `updatedAt`.
+`userUid: ref:users`, `customerType: string` (`individual`, `organization`), `displayName: string`, `organizationName: string?`, `contactPerson: string?`, `phone: string?`, `status: string` (`active`, `archived`), `createdAt`, `updatedAt`.
 
 #### `serviceLocations/{locationId}`
 `customerId: ref:customers`, `name: string`, `addressLine1: string`, `addressLine2: string?`, `city: string`, `contactPerson: string`, `contactNumber: string`, `premisesType: string?`, `accessInstructions: string?`, `status: string` (`active`, `archived`), `createdAt`, `updatedAt`.
@@ -111,7 +111,7 @@
 `customerId: ref:customers`, `jobId: ref:serviceJobs`, `rating: number`, `comment: string?`, `createdAt`, `updatedAt`. Validate rating range (proposed: 1–5) and ensure customer owns the referenced job.
 
 #### `faqs/{faqId}`
-`question: string`, `answer: string`, `category: string`, `active: boolean`, `updatedByUid: ref:users?`, `createdAt`, `updatedAt`.
+`question: string`, `answer: string`, `category: string`, `status: string` (`active`, `archived`), `updatedByUid: ref:users?`, `createdAt`, `updatedAt`.
 
 #### `chatSessions/{sessionId}`
 `customerId: ref:customers?`, `startedAt: timestamp`, `endedAt: timestamp?`, `status: string` (`active`, `closed`). Optional: do not store conversations unless needed for the approved scope.
