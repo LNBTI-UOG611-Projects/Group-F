@@ -1,6 +1,10 @@
 /**
  * PCI Colombo – fictional service-workflow seed (Firestore Emulator ONLY).
- * Prerequisites: seed.cjs, seed-phase2.cjs, seed-auth.cjs.
+ * Run order: seed-auth.cjs -> seed-phase2.cjs -> seed.cjs -> seed-services.cjs.
+ * This file only ADDS the workflow records (inspection -> quotation -> job ->
+ * visit -> assignment -> invoice). Users, customers, employees, locations and
+ * categories belong to the earlier scripts, so they are not changed here.
+ * Fixed past dates are used on purpose (DECISIONS B5: allowed in seed data).
  * Run from database/seeds with FIRESTORE_EMULATOR_HOST=127.0.0.1:8080.
  * Uses deterministic IDs: rerunning updates the same demo records.
  * Do not run against live Firestore.
@@ -22,7 +26,7 @@ const db = getFirestore(initializeApp({ projectId }));
 const at = (iso) => Timestamp.fromDate(new Date(iso));
 
 async function main() {
-  // These IDs were created by the earlier three demo seed scripts.
+  // These IDs are created by the earlier three seed scripts.
   const prerequisites = [
     ['users', 'demo-admin'],
     ['users', 'demo-subadmin'],
@@ -31,6 +35,7 @@ async function main() {
     ['customers', 'demo-customer'],
     ['employees', 'demo-employee'],
     ['serviceLocations', 'demo-location'],
+    ['serviceCategories', 'demo-treatment'],
     ['serviceRequests', 'demo-request'],
     ['inventoryItems', 'demo-equipment-002'],
     ['pestCategories', 'cockroaches']
@@ -41,7 +46,7 @@ async function main() {
     if (!snapshot.exists) missing.push(`${collection}/${id}`);
   }
   if (missing.length) {
-    throw new Error('Missing prerequisite documents. Run seed.cjs, seed-phase2.cjs, and seed-auth.cjs first:\n' + missing.join('\n'));
+    throw new Error('Missing prerequisite documents. Run seed-auth.cjs, seed-phase2.cjs and seed.cjs first:\n' + missing.join('\n'));
   }
 
   // Times are fixed fictional UTC instants; display as Asia/Colombo in the UI.
@@ -49,32 +54,9 @@ async function main() {
   const updated = at('2026-11-12T09:00:00Z');
   const now = { createdAt: created, updatedAt: updated };
   const records = [
-    // Align previously created reference records with draft collections.md.
-    ['users', 'demo-admin', { roleIds: ['main_admin'], profileType: 'staff', email: 'admin@example.test', status: 'active', ...now }],
-    ['users', 'demo-subadmin', { roleIds: ['sub_admin'], profileType: 'staff', email: 'subadmin@example.test', status: 'active', ...now }],
-    ['users', 'demo-customer-user', { roleIds: ['customer'], profileType: 'customer', email: 'customer@example.test', status: 'active', ...now }],
-    ['users', 'demo-employee-user', { roleIds: ['employee'], profileType: 'employee', email: 'employee@example.test', status: 'active', ...now }],
-    ['customers', 'demo-customer', {
-      userUid: 'demo-customer-user', customerType: 'organization', displayName: 'Example Customer',
-      organizationName: 'Example Office (Fictional)', status: 'active', ...now
-    }],
-    ['employees', 'demo-employee', {
-      userUid: 'demo-employee-user', employeeCode: 'EMP-DEMO-001', fullName: 'Example Employee',
-      specializations: ['cockroaches'], employmentStatus: 'active', ...now
-    }],
-    ['serviceLocations', 'demo-location', {
-      customerId: 'demo-customer', name: 'Example Office', addressLine1: 'Fictional Test Address',
-      city: 'Colombo', contactPerson: 'Demo Site Contact', contactNumber: '0000000000',
-      status: 'active', ...now
-    }],
-    ['serviceCategories', 'demo-treatment', {
-      name: 'Pest control service', description: 'Fictional service category', active: true, ...now
-    }],
-    ['serviceRequests', 'demo-request', {
-      customerId: 'demo-customer', locationId: 'demo-location',
-      serviceCategoryId: 'demo-treatment', pestCategoryIds: ['cockroaches'],
-      description: 'Fictional office pest-control request', priority: 'normal', status: 'quoted', ...now
-    }],
+    // The request has moved on: it was inspected and quoted.
+    // merge: true below changes only status and the two dates.
+    ['serviceRequests', 'demo-request', { status: 'quoted', ...now }],
     ['siteInspections', 'demo-inspection-001', {
       requestId: 'demo-request', assignedEmployeeId: 'demo-employee',
       scheduledAt: at('2026-11-09T04:00:00Z'), performedAt: at('2026-11-09T05:00:00Z'),
@@ -91,7 +73,7 @@ async function main() {
     ['quotationItems', 'demo-quotation-item-001', {
       quotationId: 'demo-quotation-001', description: 'Fictional service charge',
       quantity: 1, unit: 'service', unitPriceCents: 1500000,
-      lineTotalCents: 1500000, costType: 'labor', createdAt: created
+      lineTotalCents: 1500000, costType: 'labor', ...now
     }],
     ['serviceJobs', 'demo-job-001', {
       quotationId: 'demo-quotation-001', requestId: 'demo-request',
@@ -125,8 +107,13 @@ async function main() {
     batch.set(db.collection(collection).doc(id), data, { merge: true });
   }
   await batch.commit();
-  console.log(`Success! Upserted ${records.length} schema-aligned fictional documents in the Firestore Emulator.`);
+  console.log(`Success! Upserted ${records.length} fictional workflow documents in the Firestore Emulator.`);
   console.log('Follow the chain: serviceRequests/demo-request -> quotations/demo-quotation-001 -> serviceJobs/demo-job-001 -> serviceVisits/demo-visit-001 -> employeeAssignments/demo-assignment-001');
   console.log('Safety review stays pending; no chemical treatment, allocation or payment is claimed.');
 }
-main().catch((error) => { console.error(error.message || error); process.exitCode = 1; });
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error.message || error);
+    process.exit(1);
+  });
