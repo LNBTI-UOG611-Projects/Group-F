@@ -50,7 +50,7 @@
 ### 2.2 Main Admin — Yasasmi
 
 #### `employees/{employeeId}`
-`userUid: ref:users`, `employeeCode: string`, `fullName: string`, `contactNumber: string?`, `specializations: array<string>`, `hireDate: timestamp?`, `status: string`` (`active`, `archived`), `createdAt`, `updatedAt`. `userUid` must identify an appropriate authenticated employee account.
+`userUid: ref:users`, `employeeCode: string`, `fullName: string`, `contactNumber: string?`, `specializations: array<string>`, `hireDate: timestamp?`, `status: string` (`active`, `archived`), `createdAt`, `updatedAt`. `userUid` must identify an appropriate authenticated employee account.
 
 #### `leaveRequests/{leaveId}`
 `employeeId: ref:employees`, `leaveType: string` (`half_day`, `one_day`, `multiple_day`), `startDate: timestamp`, `endDate: timestamp`, `halfDaySession: string?` (`morning`, `afternoon`), `reason: string`, `status: string` (`pending`, `approved`, `rejected`, `cancelled`), `reviewedByUid: ref:users?`, `reviewedAt: timestamp?`, `reviewNote: string?`, `createdAt`, `updatedAt`.
