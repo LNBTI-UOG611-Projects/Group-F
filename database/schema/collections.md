@@ -36,7 +36,7 @@
 | `employeeId` | string? | Employee accounts only: ID of the `employees` document |
 | `createdAt`, `updatedAt` | timestamp | Audit metadata |
 
-**Rules:** Each user has exactly one role (DECISIONS B1).
+**Rules:** Users cannot grant themselves roles. Backend verifies token and reloads current status/permissions on protected requests. Each user has exactly one role (DECISIONS B1).
 
 #### `roles/{roleId}`
 `name: string`, `description: string`, `status: string` (`active`, `archived`). Recommended fixed IDs: `main_admin`, `sub_admin`, `customer`, `employee`.
