@@ -4,7 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "seed:auth": "node seed-auth.cjs",
+    "seed:phase2": "node seed-phase2.cjs",
+    "seed:base": "node seed.cjs",
+    "seed:services": "node seed-services.cjs",
+    "seed": "npm run seed:auth && npm run seed:phase2 && npm run seed:base && npm run seed:services"
   },
   "keywords": [],
   "author": "",
