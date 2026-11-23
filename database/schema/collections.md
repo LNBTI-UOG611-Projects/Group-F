@@ -28,15 +28,15 @@
 
 | Field | Type | Notes |
 |---|---|---|
+| `email` | string | Email from the Firebase Auth account; not used as the document ID |
 | `displayName` | string | Required |
-| `email` | string | Email from verified Auth account; not used as document ID |
-| `phone` | string? | Optional |
-| `roleIds` | array<string> | Initial role values: `main_admin`, `sub_admin`, `customer`, `employee`; assigned only by authorized backend |
-| `status` | string | `active`, `suspended`, `disabled` |
-| `profileType` | string | `customer`, `employee`, or `staff` as applicable |
+| `role` | string | Exactly one of `main_admin`, `sub_admin`, `customer`, `employee`; set only by the backend (DECISIONS B1) |
+| `status` | string | `active` or `archived` (DECISIONS B2) |
+| `customerId` | string? | Customer accounts only: ID of the `customers` document |
+| `employeeId` | string? | Employee accounts only: ID of the `employees` document |
 | `createdAt`, `updatedAt` | timestamp | Audit metadata |
 
-**Rules:** Users cannot grant themselves roles. Backend verifies token and reloads current status/permissions on protected requests. Choose a consistent server-side policy for multi-role accounts.
+**Rules:** Each user has exactly one role (DECISIONS B1).
 
 #### `roles/{roleId}`
 `name: string`, `description: string`, `active: boolean`. Recommended fixed IDs: `main_admin`, `sub_admin`, `customer`, `employee`.
@@ -245,9 +245,9 @@ This matrix must be implemented and tested **server side**. Validate all IDs, ow
 {
   "displayName": "Demo Employee",
   "email": "employee@example.test",
-  "roleIds": ["employee"],
+  "role": "employee",
   "status": "active",
-  "profileType": "employee"
+  "employeeId": "demo-employee"
 }
 ```
 
