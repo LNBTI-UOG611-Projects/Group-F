@@ -1,9 +1,8 @@
-
 const fs = require("fs");
 const path = require("path");
 
 const { initializeApp } = require("firebase-admin/app");
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 // Safety check: this script must NEVER write to live Firestore.
 if (process.env.FIRESTORE_EMULATOR_HOST !== "127.0.0.1:8080") {
@@ -23,53 +22,68 @@ if (!projectId) {
 const app = initializeApp({ projectId });
 const db = getFirestore(app);
 
+// B5: every document has createdAt and updatedAt (server timestamps).
+const timestamps = () => ({
+  createdAt: FieldValue.serverTimestamp(),
+  updatedAt: FieldValue.serverTimestamp()
+});
+
 async function seedDatabase() {
+  // Users are created by seed-auth.cjs. Pest categories and inventory
+  // are created by seed-phase2.cjs. All data below is fictional.
   const records = [
-    ["users", "demo-admin", {
-      displayName: "Demo Main Admin",
-      role: "main_admin",
-      status: "active"
-    }],
     ["customers", "demo-customer", {
+      userUid: "demo-customer-user",
+      customerType: "organization",
       displayName: "Example Customer",
-      contactNumber: "0000000000",
+      organizationName: "Example Office (Fictional)",
+      contactPerson: "Demo Site Contact",
+      phone: "0000000000",
       status: "active"
     }],
     ["employees", "demo-employee", {
-      displayName: "Example Employee",
-      employeeNo: "EMP-DEMO-001",
+      userUid: "demo-employee-user",
+      employeeCode: "EMP-DEMO-001",
+      fullName: "Example Employee",
+      specializations: ["cockroaches"],
       status: "active"
     }],
     ["serviceLocations", "demo-location", {
       customerId: "demo-customer",
-      locationName: "Example Office",
+      name: "Example Office",
+      addressLine1: "Fictional Test Address",
       city: "Colombo",
-      isActive: true
+      contactPerson: "Demo Site Contact",
+      contactNumber: "0000000000",
+      notes: "Fictional location for testing",
+      status: "active"
+    }],
+    ["serviceCategories", "demo-treatment", {
+      name: "Pest control service",
+      description: "Fictional service category",
+      status: "active"
     }],
     ["serviceRequests", "demo-request", {
       customerId: "demo-customer",
       locationId: "demo-location",
-      pestCategory: "cockroaches",
+      serviceCategoryId: "demo-treatment",
+      pestCategoryIds: ["cockroaches"],
       description: "Fictional test request",
-      status: "pending"
-    }],
-    ["inventoryItems", "demo-item", {
-      itemName: "Demo Reusable Equipment",
-      itemType: "equipment",
-      availableQuantity: 5,
-      unit: "units",
-      status: "active"
+      priority: "normal",
+      status: "submitted"
     }]
   ];
 
   const batch = db.batch();
 
   for (const [collection, id, data] of records) {
-    batch.set(db.collection(collection).doc(id), data);
+    // set() without merge replaces the whole document, so old wrong
+    // field names (e.g. locationName, isActive) are removed on every run.
+    batch.set(db.collection(collection).doc(id), { ...data, ...timestamps() });
   }
 
   await batch.commit();
-  console.log("Success! Six fictional Firestore documents created.");
+  console.log(`Success! ${records.length} fictional Firestore documents created.`);
 }
 
 seedDatabase()
