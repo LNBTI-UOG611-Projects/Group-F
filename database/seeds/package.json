@@ -1,0 +1,20 @@
+{
+  "name": "seeds",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "seed:auth": "node seed-auth.cjs",
+    "seed:phase2": "node seed-phase2.cjs",
+    "seed:base": "node seed.cjs",
+    "seed:services": "node seed-services.cjs",
+    "seed": "npm run seed:auth && npm run seed:phase2 && npm run seed:base && npm run seed:services"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "firebase-admin": "^14.5.0"
+  }
+}
