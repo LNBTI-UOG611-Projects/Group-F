@@ -3,7 +3,7 @@ const path = require("path");
 
 const { initializeApp } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
-const { getFirestore } = require("firebase-admin/firestore");
+const { getFirestore, FieldValue } = require("firebase-admin/firestore");
 
 // Never allow this script to run outside local emulators.
 if (
@@ -86,11 +86,23 @@ async function seedAuth() {
 
     // Firestore profile, using exactly the same UID.
     const { uid, ...profile } = user;
+    const userRef = db.collection("users").doc(uid);
 
-    await db.collection("users").doc(uid).set(
+    // B5: every document has createdAt and updatedAt.
+    // createdAt is set only the first time; updatedAt changes on every run.
+    const existing = await userRef.get();
+    const timestamps = existing.exists
+      ? { updatedAt: FieldValue.serverTimestamp() }
+      : {
+          createdAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp()
+        };
+
+    await userRef.set(
       {
         ...profile,
-        status: "active"
+        status: "active",
+        ...timestamps
       },
       { merge: true }
     );
