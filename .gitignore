@@ -1,10 +1,29 @@
-**/node_modules/
+# Dependencies (downloaded by npm install – never commit)
+node_modules/
+
+# Secrets – never commit (the example file is allowed)
+.env
+.env.*
+!.env.example
+
+# Build output
+dist/
+build/
+.expo/
+coverage/
+
+# Firebase emulator cache and all log files
 .firebase/
-firebase-debug.log
-firestore-debug.log
-ui-debug.log
 *.log
 
-# Firebase Agent Skills (local development)
+# IDE folders
+.idea/
+.vscode/
+
+# AI tool files
 .agents/
 skills-lock.json
+
+# Operating system files
+.DS_Store
+Thumbs.db
