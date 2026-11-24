@@ -15,7 +15,7 @@ inventory, chemical safety, invoices, and payments.
 - Frontend (Web): React.js
 - Frontend (Mobile): React Native
 - Backend: Node.js + Express.js
-- Database: MySQL
+- Database: Cloud Firestore
 - Version Control: Git and GitHub
 
 ## Team Members
