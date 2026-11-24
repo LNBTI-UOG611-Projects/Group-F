@@ -4,7 +4,7 @@ This file records the decisions every member, and every AI chat helping a member
 If code disagrees with this file, the code is wrong. To change a decision, open a Pull Request
 that edits this file and get the leader's approval first.
 
-Last updated: 23 Nov 2026 by Yasasmi (Group Leader)
+Last updated: 24 Nov 2026 by Yasasmi (Group Leader)
 
 ---
 
@@ -29,7 +29,7 @@ Last updated: 23 Nov 2026 by Yasasmi (Group Leader)
 | B2 | **Active / archived = `status`** (a string): `"active"` or `"archived"` (some collections add their own statuses, e.g. `"pending"`). We do **not** use `isActive` or `active` booleans. | Most of our code and seeds already use `status`. One rule everywhere. |
 | B3 | **Never permanently delete business records.** Archive them (`status: "archived"`). | Historical records are needed for jobs, invoices and reports. |
 | B4 | **Document IDs:** `users/{uid}` uses the Firebase Auth UID. Everything else uses auto IDs (seed data may use readable IDs like `demo-location`). | Matches `database/schema/collections.md`. |
-| B5 | **Field names are camelCase** (`customerId`, `createdAt`). Money is stored as integer cents in LKR (`totalCents`). Every document has `createdAt` and `updatedAt` (server timestamps). | Matches the schema draft. |
+| B5 | **Field names are camelCase** (`customerId`, `createdAt`). Money is stored as integer cents in LKR (`totalCents`). Every document has `createdAt` and `updatedAt` (server timestamps). Seed scripts (`database/seeds/`) may use fixed past timestamps so demo history looks realistic; API code always uses server timestamps. | Matches the schema draft. |
 | B6 | **References between collections are ID strings** (e.g. `customerId: "abc123"`). | Firestore has no foreign keys. |
 
 ### B7. Agreed field names for collections already in use

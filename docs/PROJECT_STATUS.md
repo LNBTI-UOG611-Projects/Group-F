@@ -3,7 +3,7 @@
 **Read this first.** It says what exists, what is broken, who fixes what, and what goes into
 `main` next. The leader updates it after every merge to `main`.
 
-Last verified against GitHub: **23 Nov 2026** (by Yasasmi, with an AI-assisted audit)
+Last verified against GitHub: **24 Nov 2026** (by Yasasmi, with an AI-assisted audit)
 
 ---
 
@@ -11,9 +11,9 @@ Last verified against GitHub: **23 Nov 2026** (by Yasasmi, with an AI-assisted a
 
 | Branch | Owner | What it contains | Merged to main? |
 |---|---|---|---|
-| `main` | Shared | Empty folder skeleton + README (+ these docs) | – |
-| `feature/main-admin` | Yasasmi | Firebase config, emulator setup, schema draft (`database/schema/collections.md`), 4 seed scripts, inventory API (create/read/update/archive) | No (draft PR #1) |
-| `feature/sub-admin` | Sunera | Express server, Firebase Admin, auth middleware (`verifyToken`, `authorizeRoles`), `/api/auth/me`, React/Vite web app with a working Firebase login page | No |
+| `main` | Shared | Folder skeleton + README + these docs (M0) | – |
+| `feature/main-admin` | Yasasmi | Firebase config, emulator setup, schema (`database/schema/collections.md`), **M2 complete**: 4 seed scripts aligned with B1–B7 and run with `npm run seed`; inventory API (create/read/update/archive, not yet tested – M5) | No (M2 PR waits for M1) |
+| `feature/sub-admin` | Sunera | Express server, Firebase Admin, auth middleware (`verifyToken`, `authorizeRoles`), `/api/auth/me`, React/Vite web app with a working Firebase login page. M1 in progress (`.idea/` removed, `.gitignore` added) | No |
 | `feature/customer` | Dulni | A **second** React/Vite app with Login (placeholder), Customer Dashboard, Profile, Service Locations (React state only, no database) | No |
 | `feature/employee` | Sasindi | Flutter starter template (to be removed, we use React Native + Expo) | No |
 
@@ -21,18 +21,18 @@ Last verified against GitHub: **23 Nov 2026** (by Yasasmi, with an AI-assisted a
 
 | # | Problem | Owner | Fixed in |
 |---|---|---|---|
-| P1 | `.idea/` IDE files are committed on `feature/sub-admin` | Sunera | M1 |
+| P1 | `.idea/` IDE files are committed on `feature/sub-admin` | Sunera | M1 ✅ fixed 24 Nov |
 | P2 | Auth routes reply `{ message, user }`, not our standard `{ success, message, data }` | Sunera | M1 |
-| P3 | `.gitignore` files differ between branches (some miss `.env`, `.agents/`, `skills-lock.json`, `.idea/`) | Sunera (M1), Yasasmi (M2) | M1/M2 |
-| P4 | Seed scripts disagree: `role` vs `roleIds`, `status` vs `isActive`/`active`, `itemName`/`availableQuantity` vs `name`/`quantityOnHand` | Yasasmi | M2 |
-| P5 | Inventory service checks pest categories with `active === true`, but categories are stored with `status: "active"`, so creating items with categories always fails | Yasasmi | M5 |
+| P3 | `.gitignore` files differ between branches (some miss `.env`, `.agents/`, `skills-lock.json`, `.idea/`) | Sunera (M1), Yasasmi (M2) | M1/M2 – main-admin ✅, sub-admin added (text still differs) |
+| P4 | Seed scripts disagree: `role` vs `roleIds`, `status` vs `isActive`/`active`, `itemName`/`availableQuantity` vs `name`/`quantityOnHand` | Yasasmi | M2 ✅ (on branch) |
+| P5 | Inventory service checks pest categories with `active === true`, but categories are stored with `status: "active"`, so creating items with categories always fails. It also writes `isActive: true` on new items (must be `status: "active"`) | Yasasmi | M5 |
 | P6 | Inventory files use CommonJS (`require`) but the server uses ES modules (`import`) | Yasasmi | M5 |
 | P7 | Inventory routes are not connected to `app.js` and have never been tested | Yasasmi | M5 |
 | P8 | **Two separate React apps** (`web/` on sub-admin and on customer) | Yasasmi (M3), Dulni (M6) | M3/M6 |
 | P9 | No shared colours/components; login pages use old green colours | Yasasmi (M3), Sunera (M4) | M3/M4 |
 | P10 | Customer locations are not saved anywhere (React state only) and use different field names | Dulni | M6 + Phase 1 |
 | P11 | Mobile app is a Flutter template and does not compile | Sasindi | M7 |
-| P12 | `docs/requirements/main-admin-database.md` describes MySQL | Yasasmi | M2 (label as superseded) |
+| P12 | `docs/requirements/main-admin-database.md` describes MySQL | Yasasmi | M2 ✅ (on branch) |
 
 ## 3. Milestones into `main` (one at a time)
 
@@ -67,7 +67,7 @@ The university requires substantial CRUD, and every member must do frontend **an
 
 | Member | Done (committed) | Next |
 |---|---|---|
-| Yasasmi | Schema draft, Firebase setup, seeds, inventory API (not yet tested) | M0, then M2, M3, M5 |
+| Yasasmi | M2 done on branch (aligned seeds, `npm run seed`, schema docs, `.gitignore`); inventory API (not yet tested) | Merge M0, review M1, open M2 PR, then M3, M5 |
 | Sunera | Express + auth foundation, web app + Firebase login | M1, then M4 |
 | Dulni | 4 customer UI pages (no backend yet) | Setup + plan the locations API; M6 after M3/M4 |
 | Sasindi | Flutter template (to be removed) | M7 |

@@ -12,8 +12,8 @@ Commands are for **Windows PowerShell** inside VS Code (Terminal → New Termina
 - "Code Evaluation & Modification" means the examiners may ask **you** to explain or change **your
   own code** on the spot. Commit only code you understand, even when an AI helped you write it.
   Ask the AI to explain anything you don't understand **before** you commit it.
-- Contributions are checked on GitHub. A commit only counts for you if **your Git email matches
-  your GitHub account** (your university Outlook email). See step 1.2.
+- Contributions are checked on GitHub. A commit only counts for you if **your Git email is listed
+  and verified on your GitHub account** (a personal email is fine – approved by the lecturer). See step 1.2.
 
 ## 1. One-time setup (every member)
 
@@ -31,11 +31,11 @@ Commands are for **Windows PowerShell** inside VS Code (Terminal → New Termina
 ### 1.2 Make sure your commits count
 ```powershell
 git config --global user.name "Your Full Name"
-git config --global user.email "your.university@outlook.email"
-git config --global user.name     # check
-git config --global user.email    # check
+git config --global user.email "the.email@on-your-github-account.com"
+git config --show-origin user.email   # check: shows the email AND where it is set
 ```
 On GitHub, open **Settings → Emails** and make sure that **exact** email is listed and verified.
+If the check shows `.git/config`, that folder has its own email that wins over the global one.
 
 ### 1.3 Get the project and your branch
 ```powershell
@@ -130,13 +130,13 @@ Open **separate terminals** for each part.
 firebase emulators:start
 #   Emulator UI: http://127.0.0.1:4000
 
-# Terminal 2 – seed test data (only needed once each time the emulators start fresh)
+# Terminal 2 – seed test data (every time the emulators start, because they start empty)
 cd database\seeds
 npm install
 $env:FIRESTORE_EMULATOR_HOST="127.0.0.1:8080"
 $env:FIREBASE_AUTH_EMULATOR_HOST="127.0.0.1:9099"
 $env:DEMO_TEST_PASSWORD="ask-the-leader"     # never commit this
-node seed-auth.cjs
+npm run seed                 # runs all 4 seed scripts in order (see database/seeds/README.md)
 
 # Terminal 3 – backend
 cd server
