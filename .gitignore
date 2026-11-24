@@ -8,3 +8,14 @@ build/
 .expo/
 coverage/
 *.log
+
+# IDE and tool files
+.idea/
+.vscode/
+.agents/
+skills-lock.json
+.firebase/
+
+# Secrets and logs
+.env
+*.log
