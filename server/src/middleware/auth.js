@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 import { auth, db } from "../config/firebaseAdmin.js";
 
@@ -8,7 +7,9 @@ export async function verifyToken(req, res, next) {
 
   if (!authorization?.startsWith("Bearer ")) {
     return res.status(401).json({
+      success: false,
       message: "Authentication token is required",
+      data: null,
     });
   }
 
@@ -16,7 +17,9 @@ export async function verifyToken(req, res, next) {
 
   if (!token) {
     return res.status(401).json({
+      success: false,
       message: "Authentication token is required",
+      data: null,
     });
   }
 
@@ -31,7 +34,9 @@ export async function verifyToken(req, res, next) {
 
     if (!userDoc.exists) {
       return res.status(403).json({
+        success: false,
         message: "User profile not found",
+        data: null,
       });
     }
 
@@ -39,7 +44,9 @@ export async function verifyToken(req, res, next) {
 
     if (profile.status !== "active") {
       return res.status(403).json({
+        success: false,
         message: "User account is not active",
+        data: null,
       });
     }
 
@@ -56,14 +63,18 @@ export async function verifyToken(req, res, next) {
       error.code === "auth/argument-error"
     ) {
       return res.status(401).json({
+        success: false,
         message: "Invalid or expired authentication token",
+        data: null,
       });
     }
 
     console.error("Authentication error:", error.message);
 
-    return res.status(503).json({
+    return res.status(500).json({
+      success: false,
       message: "Authentication service unavailable",
+      data: null,
     });
   }
 }
@@ -73,13 +84,17 @@ export function authorizeRoles(...allowedRoles) {
   return (req, res, next) => {
     if (!req.user) {
       return res.status(401).json({
+        success: false,
         message: "Authentication required",
+        data: null,
       });
     }
 
     if (!allowedRoles.includes(req.user.role)) {
       return res.status(403).json({
+        success: false,
         message: "Access denied. Insufficient permissions.",
+        data: null,
       });
     }
 

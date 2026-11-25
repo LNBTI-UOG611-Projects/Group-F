@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
@@ -19,15 +18,18 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
+    success: true,
     message: "PCI Colombo API is running",
+    data: null,
   });
 });
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
-    status: "success",
+    success: true,
     message: "Backend is working correctly",
+    data: null,
   });
 });
 
