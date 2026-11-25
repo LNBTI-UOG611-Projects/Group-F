@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import {
   verifyToken,
@@ -9,9 +8,10 @@ const router = Router();
 
 // Available to any active authenticated user
 router.get("/me", verifyToken, (req, res) => {
-  res.json({
+  res.status(200).json({
+    success: true,
     message: "Authentication successful",
-    user: req.user,
+    data: req.user,
   });
 });
 
@@ -21,9 +21,10 @@ router.get(
   verifyToken,
   authorizeRoles("sub_admin"),
   (req, res) => {
-    res.json({
+    res.status(200).json({
+      success: true,
       message: "Welcome to the Sub Admin API",
-      user: req.user,
+      data: req.user,
     });
   }
 );

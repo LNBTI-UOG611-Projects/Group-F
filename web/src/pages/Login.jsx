@@ -48,17 +48,22 @@ function Login() {
         }
       );
 
-      if (!response.ok) {
-        throw new Error("Backend authentication failed.");
+            // Read the backend reply: { success, message, data }
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(
+          result?.message || "Backend authentication failed."
+        );
       }
 
-      const data = await response.json();
+      const user = result.data;
 
       // 4. Check the verified user role
-      if (data.user.role === "sub_admin") {
+      if (user.role === "sub_admin") {
         setSuccess("Login successful! Welcome, Sub Admin.");
       } else {
-        setSuccess(`Login successful! Role: ${data.user.role}`);
+        setSuccess(`Login successful! Role: ${user.role}`);
       }
 
       // Dashboard redirection will be added next.
